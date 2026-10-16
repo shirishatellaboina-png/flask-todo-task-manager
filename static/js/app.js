@@ -7,6 +7,7 @@ const deadlineInput = document.querySelector("#task-deadline");
 const titleError = document.querySelector("#title-error");
 const toast = document.querySelector("#toast");
 const searchInput = document.querySelector("#search-input");
+const API_BASE = "/daymark-api/tasks";
 
 let activeFilter = "all";
 let editingTaskId = null;
@@ -129,7 +130,7 @@ function renderTasks(tasks, counts) {
     row.style.animationDelay = `${Math.min(index, 8) * 25}ms`;
     const complete = makeButton("complete-button", task.completed ? "Mark as pending" : "Mark as completed", "check", async () => {
       try {
-        await apiRequest(`/api/tasks/${task.id}`, {
+        await apiRequest(`${API_BASE}/${task.id}`, {
           method: "PATCH",
           body: JSON.stringify({ completed: !task.completed }),
         });
@@ -176,7 +177,7 @@ function renderTasks(tasks, counts) {
       makeButton("icon-button delete-button", `Delete ${task.title}`, "trash", async () => {
         if (!window.confirm(`Delete “${task.title}”? This cannot be undone.`)) return;
         try {
-          await apiRequest(`/api/tasks/${task.id}`, { method: "DELETE" });
+          await apiRequest(`${API_BASE}/${task.id}`, { method: "DELETE" });
           await loadTasks();
           showToast("Task deleted.");
         } catch (error) {
@@ -195,7 +196,7 @@ async function loadTasks() {
   const query = new URLSearchParams({ status: activeFilter });
   if (searchInput.value.trim()) query.set("q", searchInput.value.trim());
   try {
-    const result = await apiRequest(`/api/tasks?${query.toString()}`, { headers: {} });
+    const result = await apiRequest(`${API_BASE}?${query.toString()}`, { headers: {} });
     renderTasks(result.tasks, result.counts);
   } catch (error) {
     const message = document.createElement("div");
@@ -286,7 +287,7 @@ taskForm.addEventListener("submit", async (event) => {
   const submitButton = taskForm.querySelector('[type="submit"]');
   submitButton.disabled = true;
   try {
-    await apiRequest(editingTaskId ? `/api/tasks/${editingTaskId}` : "/api/tasks", {
+    await apiRequest(editingTaskId ? `${API_BASE}/${editingTaskId}` : API_BASE, {
       method: editingTaskId ? "PUT" : "POST",
       body: JSON.stringify(body),
     });

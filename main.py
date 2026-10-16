@@ -117,7 +117,13 @@ def index():
     return render_template("index.html")
 
 
+@app.get("/favicon.ico")
+def favicon():
+    return "", 204
+
+
 @app.get("/api/tasks")
+@app.get("/daymark-api/tasks")
 def list_tasks():
     status = request.args.get("status", "all").lower()
     if status not in {"all", "pending", "completed"}:
@@ -162,6 +168,7 @@ def list_tasks():
 
 
 @app.post("/api/tasks")
+@app.post("/daymark-api/tasks")
 def create_task():
     fields, error = validate_task_fields(request.get_json(silent=True))
     if error:
@@ -185,6 +192,7 @@ def create_task():
 
 
 @app.put("/api/tasks/<int:task_id>")
+@app.put("/daymark-api/tasks/<int:task_id>")
 def replace_task(task_id):
     fields, error = validate_task_fields(request.get_json(silent=True))
     if error:
@@ -218,6 +226,7 @@ def replace_task(task_id):
 
 
 @app.patch("/api/tasks/<int:task_id>")
+@app.patch("/daymark-api/tasks/<int:task_id>")
 def update_task(task_id):
     fields, error = validate_task_fields(request.get_json(silent=True), partial=True)
     if error:
@@ -256,6 +265,7 @@ def update_task(task_id):
 
 
 @app.delete("/api/tasks/<int:task_id>")
+@app.delete("/daymark-api/tasks/<int:task_id>")
 def delete_task(task_id):
     with db_connection() as connection:
         cursor = connection.execute("DELETE FROM tasks WHERE id = ?", (task_id,))

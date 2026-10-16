@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Daymark To-Do Manager"
+description = "A responsive full-stack task dashboard served by Flask, with SQLite persistence, deadlines, task filters, and a REST API."
+version = "1.0.0"
+id = "artifacts/daymark-todo-manager"
+router = "path"
+
+[[services]]
+name = "web"
+paths = ["/"]
+localPort = 19384
+
+[services.development]
+run = "python ../../main.py"
+
+[services.production.build]
+args = ["python", "-m", "py_compile", "../../main.py"]
+
+[services.production.run]
+args = ["python", "main.py"]
+
+[services.production.run.env]
+PORT = "19384"
+
+[services.production.health.startup]
+path = "/"
+
+[services.env]
+PORT = "19384"
+BASE_PATH = "/"

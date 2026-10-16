@@ -1,0 +1,1 @@
+- [Daymark preview routing](daymark-preview-routing.md) — root preview requires a web artifact route to the Flask service; a custom workflow alone returns a platform 404.
