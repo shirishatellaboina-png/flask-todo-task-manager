@@ -18,19 +18,7 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Daymark To-Do Manager"
-
-[[workflows.workflow]]
-name = "Daymark To-Do Manager"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "python main.py"
-waitForPort = 5000
-
-[workflows.workflow.metadata]
-outputType = "webview"
+args = "artifacts/daymark-todo-manager: web"
 
 [agent]
 stack = "PNPM_WORKSPACE"

@@ -4,6 +4,7 @@ const taskForm = document.querySelector("#task-form");
 const titleInput = document.querySelector("#task-title");
 const descriptionInput = document.querySelector("#task-description");
 const deadlineInput = document.querySelector("#task-deadline");
+const priorityInput = document.querySelector("#task-priority");
 const titleError = document.querySelector("#title-error");
 const toast = document.querySelector("#toast");
 const searchInput = document.querySelector("#search-input");
@@ -125,8 +126,10 @@ function renderTasks(tasks, counts) {
 
   const fragment = document.createDocumentFragment();
   tasks.forEach((task, index) => {
+    const due = task.due_date ? dateLabel(task.due_date) : null;
+    const isOverdue = !task.completed && due !== null && due.diff < 0;
     const row = document.createElement("article");
-    row.className = `task-row${task.completed ? " is-complete" : ""}`;
+    row.className = `task-row${task.completed ? " is-complete" : ""}${isOverdue ? " is-overdue" : ""}`;
     row.style.animationDelay = `${Math.min(index, 8) * 25}ms`;
     const complete = makeButton("complete-button", task.completed ? "Mark as pending" : "Mark as completed", "check", async () => {
       try {
@@ -157,15 +160,19 @@ function renderTasks(tasks, counts) {
 
     const meta = document.createElement("div");
     meta.className = "task-meta";
-    if (task.due_date) {
-      const due = dateLabel(task.due_date);
+    const priority = document.createElement("span");
+    priority.className = `task-priority is-${task.priority.toLowerCase()}`;
+    priority.textContent = task.priority;
+    meta.append(priority);
+    if (due) {
       const deadline = document.createElement("span");
       deadline.className = "deadline";
-      if (!task.completed && due.diff < 0) deadline.classList.add("is-overdue");
+      if (isOverdue) deadline.classList.add("is-overdue");
       if (!task.completed && due.diff === 0) deadline.classList.add("is-today");
       deadline.innerHTML = icons.calendar;
       const dueText = document.createElement("span");
-      dueText.textContent = due.diff === 0 ? "Today" : due.label;
+      dueText.textContent = isOverdue ? `Overdue · ${due.label}` : due.diff === 0 ? "Today" : due.label;
+      deadline.title = isOverdue ? `Overdue since ${due.label}` : `Due ${due.label}`;
       deadline.append(dueText);
       meta.append(deadline);
     }
@@ -222,6 +229,7 @@ function openModal(task = null) {
   titleInput.value = task?.title ?? "";
   descriptionInput.value = task?.description ?? "";
   deadlineInput.value = task?.due_date ?? "";
+  priorityInput.value = task?.priority ?? "Medium";
   titleError.textContent = "";
   taskModal.hidden = false;
   document.body.classList.add("modal-open");
@@ -282,6 +290,7 @@ taskForm.addEventListener("submit", async (event) => {
     title,
     description: descriptionInput.value.trim(),
     due_date: deadlineInput.value || null,
+    priority: priorityInput.value,
   };
   const wasEditing = editingTaskId !== null;
   const submitButton = taskForm.querySelector('[type="submit"]');

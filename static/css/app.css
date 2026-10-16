@@ -88,6 +88,7 @@ h1 { margin: 0; color: #1f3028; font: 800 clamp(30px, 4vw, 39px)/1.15 "Manrope",
 .search-box kbd { padding: 1px 5px; border: 1px solid #e4e9e5; border-radius: 4px; color: #9aa49d; background: #fff; font: 10px "DM Sans", sans-serif; }
 .task-list { min-height: 265px; }
 .task-row { display: flex; align-items: center; gap: 13px; padding: 16px 21px; border-bottom: 1px solid #f0f2f0; animation: row-enter .2s ease both; }
+.task-row.is-overdue { background: #fff9f7; box-shadow: inset 3px 0 #c56452; }
 .task-row:last-child { border-bottom: 0; }
 @keyframes row-enter { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 .complete-button { display: grid; flex: 0 0 auto; width: 19px; height: 19px; place-items: center; padding: 0; border: 1.5px solid #cbd8ce; border-radius: 50%; color: #fff; background: #fff; transition: .18s ease; }
@@ -100,9 +101,13 @@ h1 { margin: 0; color: #1f3028; font: 800 clamp(30px, 4vw, 39px)/1.15 "Manrope",
 .task-row.is-complete .task-title { color: #9ba69e; text-decoration: line-through; text-decoration-color: #b5c0b8; }
 .task-description { overflow: hidden; margin: 3px 0 0; color: #99a39c; font-size: 10px; line-height: 1.5; text-overflow: ellipsis; white-space: nowrap; }
 .task-meta { display: flex; align-items: center; gap: 12px; }
+.task-priority { display: inline-flex; align-items: center; padding: 4px 7px; border-radius: 5px; white-space: nowrap; font-size: 9px; font-weight: 700; }
+.task-priority.is-low { color: #50765a; background: #edf5ee; }
+.task-priority.is-medium { color: #8d7440; background: #f4f1e8; }
+.task-priority.is-high { color: #b25346; background: #f8eae7; }
 .deadline { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; color: #859188; font-size: 10px; }
 .deadline svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
-.deadline.is-overdue { color: #c56452; }
+.deadline.is-overdue { padding: 3px 7px; border-radius: 5px; color: #b74738; background: #fff0ed; font-weight: 700; }
 .deadline.is-today { color: #b78338; }
 .task-row.is-complete .deadline { color: #a3ada6; }
 .task-actions { display: flex; gap: 4px; opacity: .45; transition: opacity .16s; }
@@ -139,6 +144,7 @@ h1 { margin: 0; color: #1f3028; font: 800 clamp(30px, 4vw, 39px)/1.15 "Manrope",
 .text-field::placeholder { color: #aab4ac; }
 .textarea-field { min-height: 76px; resize: vertical; line-height: 1.5; }
 .date-field { color: #536258; }
+.priority-field { cursor: pointer; }
 .field-error { min-height: 13px; margin: 5px 0 -8px; color: #bd594c; font-size: 10px; }
 .dialog-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 24px; padding-top: 16px; border-top: 1px solid #eff2ef; }
 .secondary-button { min-height: 38px; padding: 0 14px; border: 1px solid #e3e9e4; border-radius: 7px; color: #68766d; background: #fff; font-size: 11px; font-weight: 600; }

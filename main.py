@@ -10,6 +10,7 @@ from flask import Flask, jsonify, render_template, request
 BASE_DIR = Path(__file__).resolve().parent
 INSTANCE_DIR = BASE_DIR / "instance"
 DATABASE_PATH = Path(os.environ.get("TODO_DB_PATH", INSTANCE_DIR / "tasks.sqlite3"))
+TASK_PRIORITIES = {"Low", "Medium", "High"}
 
 app = Flask(__name__)
 app.json.sort_keys = False
@@ -43,11 +44,19 @@ def initialize_database():
                 title TEXT NOT NULL,
                 description TEXT NOT NULL DEFAULT '',
                 due_date TEXT,
+                priority TEXT NOT NULL DEFAULT 'Medium' CHECK(priority IN ('Low', 'Medium', 'High')),
                 completed INTEGER NOT NULL DEFAULT 0,
                 created_at TEXT NOT NULL DEFAULT (datetime('now'))
             )
             """
         )
+        columns = {
+            row["name"] for row in connection.execute("PRAGMA table_info(tasks)")
+        }
+        if "priority" not in columns:
+            connection.execute(
+                "ALTER TABLE tasks ADD COLUMN priority TEXT NOT NULL DEFAULT 'Medium'"
+            )
 
 
 def task_to_dict(row):
@@ -56,6 +65,7 @@ def task_to_dict(row):
         "title": row["title"],
         "description": row["description"],
         "due_date": row["due_date"],
+        "priority": row["priority"],
         "completed": bool(row["completed"]),
         "created_at": row["created_at"],
     }
@@ -65,7 +75,7 @@ def validate_task_fields(data, partial=False):
     if not isinstance(data, dict):
         return None, "Request body must be a JSON object."
 
-    allowed = {"title", "description", "due_date", "completed"}
+    allowed = {"title", "description", "due_date", "priority", "completed"}
     unexpected = set(data) - allowed
     if unexpected:
         return None, f"Unknown field: {sorted(unexpected)[0]}."
@@ -103,6 +113,14 @@ def validate_task_fields(data, partial=False):
                 fields["due_date"] = date.fromisoformat(due_date).isoformat()
             except ValueError:
                 return None, "Deadline must be a valid date."
+
+    if "priority" in data:
+        priority = data["priority"]
+        if not isinstance(priority, str) or priority not in TASK_PRIORITIES:
+            return None, "Priority must be Low, Medium, or High."
+        fields["priority"] = priority
+    elif not partial:
+        fields["priority"] = "Medium"
 
     if "completed" in data:
         if not isinstance(data["completed"], bool):
@@ -176,11 +194,12 @@ def create_task():
 
     with db_connection() as connection:
         cursor = connection.execute(
-            "INSERT INTO tasks (title, description, due_date, completed) VALUES (?, ?, ?, ?)",
+            "INSERT INTO tasks (title, description, due_date, priority, completed) VALUES (?, ?, ?, ?, ?)",
             (
                 fields["title"],
                 fields.get("description", ""),
                 fields.get("due_date"),
+                fields["priority"],
                 fields.get("completed", 0),
             ),
         )
@@ -207,13 +226,14 @@ def replace_task(task_id):
         connection.execute(
             """
             UPDATE tasks
-            SET title = ?, description = ?, due_date = ?, completed = ?
+            SET title = ?, description = ?, due_date = ?, priority = ?, completed = ?
             WHERE id = ?
             """,
             (
                 fields["title"],
                 fields.get("description", ""),
                 fields.get("due_date"),
+                fields["priority"],
                 fields.get("completed", 0),
                 task_id,
             ),
@@ -241,18 +261,22 @@ def update_task(task_id):
         if existing is None:
             return jsonify(error="Task not found."), 404
 
-        updates = {key: existing[key] for key in ("title", "description", "due_date", "completed")}
+        updates = {
+            key: existing[key]
+            for key in ("title", "description", "due_date", "priority", "completed")
+        }
         updates.update(fields)
         connection.execute(
             """
             UPDATE tasks
-            SET title = ?, description = ?, due_date = ?, completed = ?
+            SET title = ?, description = ?, due_date = ?, priority = ?, completed = ?
             WHERE id = ?
             """,
             (
                 updates["title"],
                 updates["description"],
                 updates["due_date"],
+                updates["priority"],
                 updates["completed"],
                 task_id,
             ),
