@@ -15,10 +15,10 @@ localPort = 19384
 run = "python ../../main.py"
 
 [services.production.build]
-args = ["python", "-m", "py_compile", "../../main.py"]
+args = ["python", "-m", "py_compile", "main.py"]
 
 [services.production.run]
-args = ["python", "main.py"]
+args = ["gunicorn", "--bind", "0.0.0.0:19384", "--workers", "1", "main:app"]
 
 [services.production.run.env]
 PORT = "19384"
